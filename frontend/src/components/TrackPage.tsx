@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import MapView from './MapView'
 import { saveActivity, uploadPhoto } from '../api'
-import { formatDistance, formatDuration, formatPace, formatSpeed } from '../format'
+import { formatDuration, formatPace, formatSpeed } from '../format'
 import type { ActivityType } from '../types'
 
 const TYPES: { key: ActivityType; label: string; icon: string }[] = [
@@ -197,7 +197,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
 
   return (
     <div className={status === 'idle' ? 'page' : 'page running'}>
-      <h2>開始運動</h2>
+      <h2>{status === 'idle' ? '準備開始運動' : status === 'paused' ? '運動已暫停' : '運動進行中'}</h2>
       <div className="type-select">
         {TYPES.map((t) => (
           <button key={t.key} className={type === t.key ? 'type-btn active' : 'type-btn'}
@@ -208,17 +208,22 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
         ))}
       </div>
 
-      <div className="track-stats">
-        <div className="track-stat primary">
-          <span className="track-label">距離</span>
-          <span className="track-value">{formatDistance(distance)}</span>
+      <section className="workout-dashboard" aria-label="運動數據">
+        <div className="pace-hero">
+          <span className="track-label">即時配速</span>
+          <div className="pace-number">{status === 'tracking' && lastFix > Date.now() - 15000 && currentSpeed != null && currentSpeed > 0.3 ? formatPace(1000 / currentSpeed, 1000).split(' ')[0] : '--:--'}</div>
+          <span className="metric-unit">分 / 公里</span>
         </div>
-        <div className="track-stat"><span className="track-label">時間</span><span className="track-value">{formatDuration(elapsed)}</span></div>
-        <div className="track-stat live-pace"><span className="track-label">即時配速</span><span className="track-value">{status === 'tracking' && lastFix > Date.now() - 15000 && currentSpeed != null && currentSpeed > 0.3 ? formatPace(1000 / currentSpeed, 1000) : '--:-- 分/公里'}</span></div>
-        <div className="track-stat"><span className="track-label">即時速度</span><span className="track-value">{status === 'tracking' && lastFix > Date.now() - 15000 && currentSpeed != null ? (currentSpeed * 3.6).toFixed(1) : '--'} km/h</span></div>
-        <div className="track-stat"><span className="track-label">平均配速</span><span className="track-value">{formatPace(elapsed, distance)}</span></div>
-        <div className="track-stat"><span className="track-label">平均速度</span><span className="track-value">{formatSpeed(distance, elapsed)} km/h</span></div>
-      </div>
+        <div className="workout-totals">
+          <div className="metric"><span className="track-label">運動時間</span><strong>{formatDuration(elapsed)}</strong><span className="metric-unit">時間</span></div>
+          <div className="metric"><span className="track-label">累計距離</span><strong>{(distance / 1000).toFixed(2)}</strong><span className="metric-unit">公里</span></div>
+        </div>
+        <div className="workout-details">
+          <div className="metric"><span className="track-label">即時速度</span><strong>{status === 'tracking' && lastFix > Date.now() - 15000 && currentSpeed != null ? (currentSpeed * 3.6).toFixed(1) : '--'}</strong><span className="metric-unit">km/h</span></div>
+          <div className="metric"><span className="track-label">平均配速</span><strong>{formatPace(elapsed, distance).split(' ')[0]}</strong><span className="metric-unit">分 / 公里</span></div>
+          <div className="metric"><span className="track-label">平均速度</span><strong>{formatSpeed(distance, elapsed)}</strong><span className="metric-unit">km/h</span></div>
+        </div>
+      </section>
       {status !== 'idle' && <div className="tracking-notice" role="status">
         <p>{status === 'paused' ? '已暫停' : !lastFix ? '等待 GPS 定位，請允許位置權限' : lastFix < Date.now() - 15000 ? 'GPS 尚未更新，請確認定位權限與訊號' : 'GPS 定位中・數據隨定位更新'}</p>
         <label><input type="checkbox" checked={keepAwake} onChange={e => setKeepAwake(e.target.checked)} /> 保持螢幕亮起</label>

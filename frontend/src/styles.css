@@ -78,9 +78,33 @@ h3 { margin: 12px 0 10px; font-size: 1rem; }
 .btn-add-photo { background: #eef2ff; color: #4f46e5; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
 .btn-add-photo.big { display: block; width: 100%; padding: 12px; font-size: 0.95rem; margin-top: 8px; }
 .saved-box { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-.live-pace { grid-column: 1 / -1; }
-.live-pace .track-value { font-size: clamp(1.8rem, 8vw, 2.6rem); font-variant-numeric: tabular-nums; }
-.running .track-stats { position: sticky; top: 68px; z-index: 900; background: var(--bg); padding: 8px 0; }
+/* Workout dashboard: one focal value, two totals, three supporting metrics. */
+.workout-dashboard { overflow: hidden; background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; margin-bottom: 18px; box-shadow: 0 6px 24px rgba(15, 23, 42, .04); }
+.pace-hero { text-align: center; padding: 24px 16px 22px; background: #f0fdf4; border-bottom: 1px solid #dcfce7; }
+.pace-hero .track-label { color: #15803d; font-size: .85rem; font-weight: 600; letter-spacing: .08em; }
+.pace-number { color: #14532d; font-size: clamp(3.4rem, 16vw, 4.5rem); font-weight: 750; line-height: 1.2; letter-spacing: -.04em; font-variant-numeric: tabular-nums; margin: 6px 0; }
+.metric-unit { display: block; color: var(--muted); font-size: .75rem; line-height: 1.5; }
+.workout-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 20px 0; }
+.metric { min-width: 0; text-align: center; padding: 0 8px; }
+.metric + .metric { border-left: 1px solid #e2e8f0; }
+.metric strong { display: block; font-size: clamp(1.4rem, 6vw, 1.9rem); line-height: 1.5; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.025em; }
+.metric .track-label { margin-bottom: 3px; font-size: .78rem; }
+.workout-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #eef2f6; padding: 16px 0; }
+.workout-details strong { font-size: clamp(1.15rem, 5vw, 1.45rem); }
+.type-select { padding: 4px; gap: 4px; border-radius: 16px; background: #e8eef0; margin-bottom: 18px; }
+.type-btn { flex-direction: row; justify-content: center; gap: 7px; border: 0; background: transparent; padding: 12px 4px; border-radius: 12px; font-size: .9rem; }
+.type-btn.active { background: #fff; box-shadow: 0 2px 6px rgba(15,23,42,.06); }
+.type-icon { font-size: 1.2rem; }
+.app-header { min-height: 64px; padding: 12px 16px; flex-wrap: wrap; }
+.app-header h1 { font-size: 1rem; flex: 1; white-space: nowrap; }
+.user-chip { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .72rem; }
+.logout-btn { flex-shrink: 0; }
+.track-actions button { min-height: 54px; }
+.tracking-notice { background: #eaf3ed; border-radius: 12px; padding: 10px 12px; }
+@media (max-width: 420px) {
+  .app-header .user-chip { display: none; }
+  .app-main { padding: 18px 14px 86px; }
+}
 .running .type-select { display: none; }
 .tracking-notice { font-size: .85rem; color: var(--muted); line-height: 1.7; margin-bottom: 12px; }
 button:disabled { opacity: .5; cursor: default; }
