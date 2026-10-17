@@ -54,3 +54,27 @@ h3 { margin: 12px 0 10px; font-size: 1rem; }
 @media (min-width: 600px) {
   .app { box-shadow: 0 0 20px rgba(0,0,0,0.06); }
 }
+
+.auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.auth-card { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 380px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.auth-card h1 { text-align: center; margin-bottom: 4px; }
+.auth-card .muted { text-align: center; margin-bottom: 20px; }
+.auth-card form { display: flex; flex-direction: column; gap: 12px; }
+.auth-card label { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.auth-card input { padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+.link-btn { background: none; border: none; color: var(--green); margin-top: 14px; width: 100%; text-align: center; font-size: 0.9rem; }
+.app-header { display: flex; align-items: center; gap: 10px; }
+.user-chip { margin-left: auto; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+.logout-btn { background: rgba(255,255,255,0.18); border: none; color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; }
+.month-card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.month-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.month-head strong { font-size: 1.05rem; }
+.month-head span { color: var(--muted); font-size: 0.85rem; }
+.month-types { display: flex; flex-wrap: wrap; gap: 6px; }
+.month-type-chip { background: #f0fdf4; color: var(--green-dark); border-radius: 20px; padding: 4px 10px; font-size: 0.8rem; }
+.photo-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+.history-actions { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.btn-add-photo { background: #eef2ff; color: #4f46e5; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
+.btn-add-photo.big { display: block; width: 100%; padding: 12px; font-size: 0.95rem; margin-top: 8px; }
+.saved-box { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 12px; }

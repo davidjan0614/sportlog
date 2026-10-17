@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import MapView from './MapView'
-import { saveActivity } from '../api'
+import { saveActivity, uploadPhoto } from '../api'
 import { formatDistance, formatDuration, formatPace, formatSpeed } from '../format'
 import type { ActivityType } from '../types'
 
@@ -28,6 +28,8 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [savedId, setSavedId] = useState<number | null>(null)
+  const [photos, setPhotos] = useState<string[]>([])
 
   const watchId = useRef<number | null>(null)
   const timerId = useRef<number | null>(null)
@@ -41,9 +43,7 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
 
   useEffect(() => {
     if (status !== 'tracking') return
-    const tick = () => {
-      setElapsed(accum.current + (Date.now() - startTs.current) / 1000)
-    }
+    const tick = () => setElapsed(accum.current + (Date.now() - startTs.current) / 1000)
     tick()
     timerId.current = window.setInterval(tick, 500)
     return clearTimer
@@ -55,9 +55,7 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
         const lat = pos.coords.latitude
         const lng = pos.coords.longitude
         setPoints((prev) => [...prev, [lat, lng]])
-        if (lastPt.current) {
-          setDistance((prev) => prev + haversine(lastPt.current![0], lastPt.current![1], lat, lng))
-        }
+        if (lastPt.current) setDistance((prev) => prev + haversine(lastPt.current![0], lastPt.current![1], lat, lng))
         lastPt.current = [lat, lng]
       },
       (err) => setError('定位失敗：' + err.message),
@@ -66,7 +64,7 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
   }
 
   function start() {
-    setPoints([]); setDistance(0); setElapsed(0); setError(''); setSaved(false)
+    setPoints([]); setDistance(0); setElapsed(0); setError(''); setSaved(false); setPhotos([]); setSavedId(null)
     lastPt.current = null; accum.current = 0
     if (!('geolocation' in navigator)) { setError('此裝置不支援 GPS'); return }
     startTs.current = Date.now()
@@ -97,31 +95,35 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
     setStatus('idle')
     setSaving(true)
     try {
-      await saveActivity({
+      const id = await saveActivity({
         type, distance_m: Math.round(distance), duration_s: Math.round(duration),
-        start_ts: startTs.current, end_ts: endTs,
-        route: points.length > 0 ? points : null,
+        start_ts: startTs.current, end_ts: endTs, route: points.length > 0 ? points : null,
       })
+      setSavedId(id)
       setSaved(true)
       onSaved()
     } catch (e) {
       setError('儲存失敗（後端未啟動？）')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
+  }
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || savedId == null) return
+    try {
+      const url = await uploadPhoto(savedId, file)
+      setPhotos((prev) => [...prev, url])
+    } catch { setError('照片上傳失敗') }
+    e.target.value = ''
   }
 
   return (
     <div className="page">
       <h2>開始運動</h2>
-
       <div className="type-select">
         {TYPES.map((t) => (
-          <button
-            key={t.key}
-            className={type === t.key ? 'type-btn active' : 'type-btn'}
-            onClick={() => status === 'idle' && setType(t.key)}
-          >
+          <button key={t.key} className={type === t.key ? 'type-btn active' : 'type-btn'}
+            onClick={() => status === 'idle' && setType(t.key)}>
             <span className="type-icon">{t.icon}</span>
             <span>{t.label}</span>
           </button>
@@ -133,23 +135,26 @@ export default function TrackPage({ onSaved }: { onSaved: () => void }) {
           <span className="track-label">距離</span>
           <span className="track-value">{formatDistance(distance)}</span>
         </div>
-        <div className="track-stat">
-          <span className="track-label">時間</span>
-          <span className="track-value">{formatDuration(elapsed)}</span>
-        </div>
-        <div className="track-stat">
-          <span className="track-label">配速</span>
-          <span className="track-value">{formatPace(elapsed, distance)}</span>
-        </div>
-        <div className="track-stat">
-          <span className="track-label">速度</span>
-          <span className="track-value">{formatSpeed(distance, elapsed)} km/h</span>
-        </div>
+        <div className="track-stat"><span className="track-label">時間</span><span className="track-value">{formatDuration(elapsed)}</span></div>
+        <div className="track-stat"><span className="track-label">配速</span><span className="track-value">{formatPace(elapsed, distance)}</span></div>
+        <div className="track-stat"><span className="track-label">速度</span><span className="track-value">{formatSpeed(distance, elapsed)} km/h</span></div>
       </div>
 
       {error && <p className="error">{error}</p>}
       {saving && <p className="muted">儲存中…</p>}
-      {saved && <p className="success">✅ 已儲存！到「歷史」查看。</p>}
+      {saved && (
+        <div className="saved-box">
+          <p className="success">✅ 已儲存！</p>
+          <label className="btn-add-photo big">📷 上傳運動照片
+            <input type="file" accept="image/*" capture="environment" hidden onChange={onPickPhoto} />
+          </label>
+          {photos.length > 0 && (
+            <div className="photo-row">
+              {photos.map((url, i) => <img key={i} src={url} className="photo-thumb" alt="" />)}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="track-actions">
         {status === 'idle' && <button className="btn-primary" onClick={start}>▶ 開始</button>}
