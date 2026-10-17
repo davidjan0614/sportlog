@@ -13,6 +13,7 @@ export default function App() {
   const [checking, setChecking] = useState(true)
   const [tab, setTab] = useState<Tab>('track')
   const [refreshKey, setRefreshKey] = useState(0)
+  const [tracking, setTracking] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -31,10 +32,11 @@ export default function App() {
       <header className="app-header">
         <h1>🏃 SportLog 運動紀錄</h1>
         <span className="user-chip">{user.username}</span>
-        <button className="logout-btn" onClick={() => { setToken(null); setUser(null) }}>登出</button>
+        <button className="logout-btn" disabled={tracking} onClick={() => { setToken(null); setUser(null) }}>登出</button>
       </header>
       <main className="app-main">
-        {tab === 'track' && <TrackPage onSaved={() => setRefreshKey((k) => k + 1)} />}
+        {tracking && tab !== 'track' && <button className="btn-primary" onClick={() => setTab('track')}>🏃 運動進行中・回到即時配速</button>}
+        <div hidden={tab !== 'track'}><TrackPage onActiveChange={setTracking} onSaved={() => setRefreshKey((k) => k + 1)} /></div>
         {tab === 'history' && <HistoryPage refreshKey={refreshKey} />}
         {tab === 'stats' && <StatsPage refreshKey={refreshKey} />}
         {tab === 'report' && <ReportPage refreshKey={refreshKey} />}
