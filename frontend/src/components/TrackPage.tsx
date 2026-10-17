@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import MapView from './MapView'
+import { StravaActivity } from './StravaPanel'
 import { saveActivity, uploadPhoto } from '../api'
 import { formatDuration, formatPace, formatSpeed } from '../format'
 import type { ActivityType } from '../types'
@@ -43,6 +44,8 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   const lastPosition = useRef<GeolocationPosition | null>(null)
   const sessionStart = useRef(0)
   const active = useRef(false)
+  const routeSamples = useRef<{lat: number; lng: number; ts: number; segment: number}[]>([])
+  const segmentId = useRef(0)
 
   useEffect(() => { onActiveChange(status !== 'idle') }, [status, onActiveChange])
 
@@ -105,6 +108,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
         }
         const lat = pos.coords.latitude
         const lng = pos.coords.longitude
+        routeSamples.current.push({ lat, lng, ts: pos.timestamp, segment: segmentId.current })
         setError('')
         setLastFix(Date.now())
         const previous = lastPosition.current
@@ -131,6 +135,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   function start() {
     setPoints([]); setDistance(0); setElapsed(0); setError(''); setSaved(false); setPhotos([]); setSavedId(null)
     lastPt.current = null; accum.current = 0
+    routeSamples.current = []; segmentId.current = 0
     lastPosition.current = null; setCurrentSpeed(null); setLastFix(0)
     if (!('geolocation' in navigator)) { setError('此裝置不支援 GPS'); return }
     startTs.current = Date.now()
@@ -153,6 +158,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   }
 
   function resume() {
+    segmentId.current += 1
     active.current = true
     setLastFix(0)
     startTs.current = Date.now()
@@ -172,6 +178,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
     setSaving(true)
     try {
       const id = await saveActivity({
+        route_samples: routeSamples.current,
         type, distance_m: Math.round(distance), duration_s: Math.round(duration),
         start_ts: sessionStart.current, end_ts: endTs, route: points.length > 0 ? points : null,
       })
@@ -235,6 +242,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
       {saved && (
         <div className="saved-box">
           <p className="success">✅ 已儲存！</p>
+          {savedId != null && <StravaActivity id={savedId} />}
           <label className="btn-add-photo big">📷 上傳運動照片
             <input type="file" accept="image/*" capture="environment" hidden onChange={onPickPhoto} />
           </label>

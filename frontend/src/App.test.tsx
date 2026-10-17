@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import App from './App'
+vi.mock('./components/StravaPanel', () => ({ default: () => null, StravaActivity: () => null }))
 vi.mock('./components/MapView', () => ({ default: () => null }))
 vi.mock('./components/HistoryPage', () => ({ default: () => <p>歷史紀錄</p> }))
 vi.mock('./api', () => ({ getToken: () => 'test', me: async () => ({ username: 'runner' }), setToken: vi.fn(), saveActivity: vi.fn(), uploadPhoto: vi.fn() }))

@@ -9,13 +9,13 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Header, Depends
+from fastapi import BackgroundTasks, FastAPI, HTTPException, UploadFile, File, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-DB = "sportlog.db"
-UPLOAD_DIR = "uploads"
+DB = os.getenv("SPORTLOG_DB", "sportlog.db")
+UPLOAD_DIR = os.getenv("SPORTLOG_UPLOAD_DIR", "uploads")
 TZ = timezone(timedelta(hours=8))  # 台灣時間
 
 app = FastAPI(title="SportLog API", version="2.0.0")
@@ -73,8 +73,12 @@ def init_db() -> None:
             filename TEXT NOT NULL,
             created_ts INTEGER NOT NULL)"""
     )
+    columns = {r[1] for r in conn.execute("PRAGMA table_info(activities)")}
+    if "route_samples" not in columns:
+        conn.execute("ALTER TABLE activities ADD COLUMN route_samples TEXT")
     conn.commit()
     conn.close()
+    strava.init_tables()
 
 
 def hash_password(password: str, salt: str) -> str:
@@ -115,6 +119,13 @@ class AuthIn(BaseModel):
     password: str
 
 
+class RouteSample(BaseModel):
+    lat: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    lng: float = Field(ge=-180, le=180, allow_inf_nan=False)
+    ts: int = Field(gt=0)
+    segment: int = Field(default=0, ge=0)
+
+
 class ActivityIn(BaseModel):
     type: str
     distance_m: float
@@ -123,6 +134,7 @@ class ActivityIn(BaseModel):
     end_ts: int
     route: Optional[List[List[float]]] = None
     note: Optional[str] = None
+    route_samples: Optional[List[RouteSample]] = None
 
 
 @app.on_event("startup")
@@ -190,7 +202,7 @@ def me(user_id: int = Depends(auth_dep)) -> dict:
 
 # ---------- 運動紀錄 ----------
 @app.post("/api/activities", status_code=201)
-def create_activity(a: ActivityIn, user_id: int = Depends(auth_dep)) -> dict:
+def create_activity(a: ActivityIn, background_tasks: BackgroundTasks, user_id: int = Depends(auth_dep)) -> dict:
     if a.type not in ACTIVITY_TYPES:
         raise HTTPException(status_code=422, detail="type must be run/cycle/walk")
     conn = get_conn()
@@ -201,7 +213,11 @@ def create_activity(a: ActivityIn, user_id: int = Depends(auth_dep)) -> dict:
     )
     conn.commit()
     aid = cur.lastrowid
+    if a.route_samples:
+        conn.execute("UPDATE activities SET route_samples=? WHERE id=?", (json.dumps([x.model_dump() for x in a.route_samples]), aid))
+        conn.commit()
     conn.close()
+    background_tasks.add_task(strava.auto_sync, aid, user_id)
     return {"id": aid}
 
 
@@ -326,6 +342,10 @@ def monthly_report(user_id: int = Depends(auth_dep)) -> List[dict]:
             "by_type": {t: {kk: (round(vv, 1) if kk != "count" else vv) for kk, vv in v.items()} for t, v in m["by_type"].items()},
         })
     return result
+
+
+from strava_sync import StravaSync
+strava = StravaSync(app, get_conn, auth_dep)
 
 
 if __name__ == "__main__":

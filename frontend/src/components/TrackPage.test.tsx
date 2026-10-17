@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import TrackPage from './TrackPage'
 import { saveActivity } from '../api'
 
+vi.mock('./StravaPanel', () => ({ default: () => null, StravaActivity: () => null }))
 vi.mock('./MapView', () => ({ default: () => null }))
 vi.mock('../api', () => ({ saveActivity: vi.fn().mockResolvedValue(1), uploadPhoto: vi.fn() }))
 let position: PositionCallback
