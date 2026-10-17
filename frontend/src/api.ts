@@ -73,7 +73,7 @@ export async function fetchActivities(): Promise<Activity[]> {
 
 export async function saveActivity(a: {
   type: ActivityType; distance_m: number; duration_s: number; start_ts: number; end_ts: number;
-  route: [number, number][] | null; note?: string
+  route: [number, number][] | null; note?: string; route_samples?: {lat: number; lng: number; ts: number; segment: number}[]
 }): Promise<number> {
   const j = await reqJson('/activities', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a),
@@ -106,3 +106,11 @@ export async function fetchPhotos(activityId: number): Promise<string[]> {
   const j = await reqJson('/activities/' + activityId + '/photos')
   return j.map(photoUrl)
 }
+
+export type StravaState = { configured: boolean; connected: boolean }
+export type StravaResult = { status: string; strava_id: string | null; error: string | null }
+export const stravaStatus = (): Promise<StravaState> => reqJson('/strava/status')
+export const stravaConnect = (): Promise<{url: string}> => reqJson('/strava/connect', {method: 'POST'})
+export const stravaDisconnect = () => reqJson('/strava/connection', {method: 'DELETE'})
+export const stravaActivity = (id: number): Promise<StravaResult> => reqJson(`/activities/${id}/strava`)
+export const stravaSync = (id: number): Promise<StravaResult> => reqJson(`/activities/${id}/strava`, {method: 'POST'})

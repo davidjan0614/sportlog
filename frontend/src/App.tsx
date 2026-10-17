@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import TrackPage from './components/TrackPage'
+import StravaPanel from './components/StravaPanel'
 import HistoryPage from './components/HistoryPage'
 import StatsPage from './components/StatsPage'
 import ReportPage from './components/ReportPage'
@@ -11,7 +12,7 @@ type Tab = 'track' | 'history' | 'stats' | 'report'
 export default function App() {
   const [user, setUser] = useState<{ username: string } | null>(null)
   const [checking, setChecking] = useState(true)
-  const [tab, setTab] = useState<Tab>('track')
+  const [tab, setTab] = useState<Tab>(new URLSearchParams(window.location.search).has('strava') ? 'history' : 'track')
   const [refreshKey, setRefreshKey] = useState(0)
   const [tracking, setTracking] = useState(false)
 
@@ -37,7 +38,7 @@ export default function App() {
       <main className="app-main">
         {tracking && tab !== 'track' && <button className="btn-primary" onClick={() => setTab('track')}>🏃 運動進行中・回到即時配速</button>}
         <div hidden={tab !== 'track'}><TrackPage onActiveChange={setTracking} onSaved={() => setRefreshKey((k) => k + 1)} /></div>
-        {tab === 'history' && <HistoryPage refreshKey={refreshKey} />}
+        {tab === 'history' && <><StravaPanel /><HistoryPage refreshKey={refreshKey} /></>}
         {tab === 'stats' && <StatsPage refreshKey={refreshKey} />}
         {tab === 'report' && <ReportPage refreshKey={refreshKey} />}
       </main>

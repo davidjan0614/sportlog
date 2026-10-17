@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchActivities, deleteActivity, fetchPhotos, uploadPhoto } from '../api'
+import { StravaActivity } from './StravaPanel'
 import type { Activity } from '../types'
 import { formatDateTime, formatDistance, formatDuration, formatPace } from '../format'
 
@@ -54,6 +55,7 @@ export default function HistoryPage({ refreshKey }: { refreshKey: number }) {
                 <strong>{formatDistance(a.distance_m)}</strong>
                 <span>· {formatDuration(a.duration_s)} · 配速 {formatPace(a.duration_s, a.distance_m)}</span>
                 <span className="history-date">{formatDateTime(a.start_ts)}</span>
+                <StravaActivity id={a.id} />
               </div>
               {(photos[a.id]?.length ?? 0) > 0 && (
                 <div className="photo-row">
