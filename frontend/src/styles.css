@@ -1,0 +1,56 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --green: #16a34a; --green-dark: #15803d; --bg: #f1f5f9; --card: #ffffff;
+  --text: #0f172a; --muted: #64748b; --danger: #dc2626; --warn: #d97706;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', sans-serif;
+  background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent;
+}
+.app { max-width: 560px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.app-header { background: var(--green); color: #fff; padding: 14px 18px; position: sticky; top: 0; z-index: 1000; }
+.app-header h1 { font-size: 1.2rem; font-weight: 700; }
+.app-main { flex: 1; padding: 16px 16px 84px; }
+.page h2 { margin-bottom: 14px; font-size: 1.1rem; }
+.tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid #e2e8f0; z-index: 1000; max-width: 560px; margin: 0 auto; }
+.tab-bar button { flex: 1; padding: 14px; border: none; background: none; font-size: 1rem; color: var(--muted); }
+.tab-bar button.active { color: var(--green); font-weight: 700; border-top: 2px solid var(--green); }
+button { cursor: pointer; font-family: inherit; }
+.btn-primary { background: var(--green); color: #fff; border: none; border-radius: 12px; padding: 14px 20px; font-size: 1.05rem; font-weight: 700; width: 100%; }
+.btn-danger { background: var(--danger); color: #fff; border: none; border-radius: 12px; padding: 14px 20px; font-size: 1.05rem; font-weight: 700; }
+.btn-warn { background: var(--warn); color: #fff; border: none; border-radius: 12px; padding: 14px 20px; font-size: 1.05rem; font-weight: 700; }
+.btn-danger.small { padding: 8px 12px; font-size: 0.85rem; border-radius: 8px; width: auto; }
+.type-select { display: flex; gap: 10px; margin-bottom: 18px; }
+.type-btn { flex: 1; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.95rem; color: var(--text); }
+.type-btn.active { border-color: var(--green); background: #f0fdf4; color: var(--green); font-weight: 700; }
+.type-icon { font-size: 1.6rem; }
+.track-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.track-stat { background: #fff; border-radius: 12px; padding: 14px; text-align: center; }
+.track-stat.primary { grid-column: 1 / -1; background: var(--green); color: #fff; }
+.track-stat.primary .track-value { color: #fff; }
+.track-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+.track-stat.primary .track-label { color: rgba(255,255,255,0.8); }
+.track-value { font-size: 1.5rem; font-weight: 700; }
+.track-actions { display: flex; gap: 10px; margin-bottom: 16px; }
+.track-actions .btn-primary, .track-actions .btn-danger, .track-actions .btn-warn { flex: 1; }
+.error { color: var(--danger); margin: 8px 0; font-size: 0.9rem; }
+.success { color: var(--green); margin: 8px 0; font-size: 0.9rem; font-weight: 700; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+.history-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.history-item { background: #fff; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.history-type { font-weight: 700; }
+.history-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.history-meta strong { font-size: 1.1rem; }
+.history-meta span { color: var(--muted); font-size: 0.85rem; }
+.history-date { font-size: 0.8rem !important; }
+.stat-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 14px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.stat-num { font-size: 1.3rem; font-weight: 700; color: var(--green); }
+.stat-label { font-size: 0.8rem; color: var(--muted); }
+.stat-row { background: #fff; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; margin-bottom: 8px; }
+.stat-row-label { font-weight: 700; }
+.stat-row-value { color: var(--muted); font-size: 0.9rem; }
+h3 { margin: 12px 0 10px; font-size: 1rem; }
+@media (min-width: 600px) {
+  .app { box-shadow: 0 0 20px rgba(0,0,0,0.06); }
+}
