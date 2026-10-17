@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import MapView from './MapView'
+import GpxExport from './GpxExport'
+import { makeGpx, rememberGpx } from '../gpx'
+import type { GpsSample, GpxFile } from '../gpx'
 import { saveActivity, uploadPhoto } from '../api'
 import { formatDuration, formatPace, formatSpeed } from '../format'
 import type { ActivityType } from '../types'
@@ -19,7 +22,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
   return 2 * R * Math.asin(Math.sqrt(a))
 }
 
-export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => void; onActiveChange: (active: boolean) => void }) {
+export default function TrackPage({ onSaved, onActiveChange, username = '' }: { username?: string; onSaved: () => void; onActiveChange: (active: boolean) => void }) {
   const [type, setType] = useState<ActivityType>('run')
   const [status, setStatus] = useState<'idle' | 'tracking' | 'paused'>('idle')
   const [points, setPoints] = useState<[number, number][]>([])
@@ -43,6 +46,10 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   const lastPosition = useRef<GeolocationPosition | null>(null)
   const sessionStart = useRef(0)
   const active = useRef(false)
+  const samples = useRef<GpsSample[]>([])
+  const segment = useRef(0)
+  const [gpxFile, setGpxFile] = useState<GpxFile | null>(null)
+  const [gpxNotice, setGpxNotice] = useState('')
 
   useEffect(() => { onActiveChange(status !== 'idle') }, [status, onActiveChange])
 
@@ -105,6 +112,9 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
         }
         const lat = pos.coords.latitude
         const lng = pos.coords.longitude
+        const lastSample = samples.current[samples.current.length - 1]
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(pos.timestamp) || (lastSample && pos.timestamp <= lastSample.ts)) return
+        samples.current.push({ lat, lng, ts: pos.timestamp, segment: segment.current })
         setError('')
         setLastFix(Date.now())
         const previous = lastPosition.current
@@ -131,6 +141,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   function start() {
     setPoints([]); setDistance(0); setElapsed(0); setError(''); setSaved(false); setPhotos([]); setSavedId(null)
     lastPt.current = null; accum.current = 0
+    samples.current = []; segment.current = 0; setGpxFile(null); setGpxNotice('')
     lastPosition.current = null; setCurrentSpeed(null); setLastFix(0)
     if (!('geolocation' in navigator)) { setError('此裝置不支援 GPS'); return }
     startTs.current = Date.now()
@@ -153,6 +164,7 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
   }
 
   function resume() {
+    segment.current += 1
     active.current = true
     setLastFix(0)
     startTs.current = Date.now()
@@ -170,11 +182,17 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
     setElapsed(duration)
     setStatus('idle')
     setSaving(true)
+    let file: GpxFile | null = null
+    try { file = makeGpx(type, samples.current); setGpxFile(file) }
+    catch (e) { setGpxNotice((e as Error).message) }
     try {
       const id = await saveActivity({
         type, distance_m: Math.round(distance), duration_s: Math.round(duration),
         start_ts: sessionStart.current, end_ts: endTs, route: points.length > 0 ? points : null,
       })
+      if (file && !rememberGpx(username, { id, start_ts: sessionStart.current }, file)) {
+        setGpxNotice('瀏覽器無法保留 GPX，請現在下載；離開頁面後無法重新下載。')
+      }
       setSavedId(id)
       setSaved(true)
       onSaved()
@@ -232,9 +250,13 @@ export default function TrackPage({ onSaved, onActiveChange }: { onSaved: () => 
 
       {error && <p className="error">{error}</p>}
       {saving && <p className="muted">儲存中…</p>}
+      {gpxFile && !saved && <GpxExport file={gpxFile} />}
+      {gpxNotice && <p className="muted">{gpxNotice}</p>}
       {saved && (
         <div className="saved-box">
           <p className="success">✅ 已儲存！</p>
+          <GpxExport file={gpxFile} />
+          <p className="muted">GPX 保留在這台裝置，建議立即下載備份。之後可到「歷史」重新下載。</p>
           <label className="btn-add-photo big">📷 上傳運動照片
             <input type="file" accept="image/*" capture="environment" hidden onChange={onPickPhoto} />
           </label>

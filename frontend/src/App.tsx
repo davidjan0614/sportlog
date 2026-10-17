@@ -36,8 +36,8 @@ export default function App() {
       </header>
       <main className="app-main">
         {tracking && tab !== 'track' && <button className="btn-primary" onClick={() => setTab('track')}>🏃 運動進行中・回到即時配速</button>}
-        <div hidden={tab !== 'track'}><TrackPage onActiveChange={setTracking} onSaved={() => setRefreshKey((k) => k + 1)} /></div>
-        {tab === 'history' && <HistoryPage refreshKey={refreshKey} />}
+        <div hidden={tab !== 'track'}><TrackPage username={user.username} onActiveChange={setTracking} onSaved={() => setRefreshKey((k) => k + 1)} /></div>
+        {tab === 'history' && <HistoryPage username={user.username} refreshKey={refreshKey} />}
         {tab === 'stats' && <StatsPage refreshKey={refreshKey} />}
         {tab === 'report' && <ReportPage refreshKey={refreshKey} />}
       </main>

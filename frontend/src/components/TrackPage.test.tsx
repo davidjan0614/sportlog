@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import TrackPage from './TrackPage'
 import { saveActivity } from '../api'
+import { recalledGpx } from '../gpx'
 
 vi.mock('./MapView', () => ({ default: () => null }))
 vi.mock('../api', () => ({ saveActivity: vi.fn().mockResolvedValue(1), uploadPhoto: vi.fn() }))
@@ -47,6 +48,12 @@ it('excludes pause time and paused movement, preserving original start time', as
   act(() => vi.advanceTimersByTime(60000))
   await act(async () => { fireEvent.click(screen.getByText('■ 結束並儲存')) })
   expect(saveActivity).toHaveBeenCalledWith(expect.objectContaining({ duration_s: 15, distance_m: 33, start_ts: start }))
+  const file = recalledGpx('', {id: 1, start_ts: start})
+  expect(file).not.toBeNull()
+  const xml = new DOMParser().parseFromString(file!.xml, 'application/xml')
+  expect(xml.querySelectorAll('trkpt')).toHaveLength(3)
+  expect(xml.querySelectorAll('trkseg')).toHaveLength(2)
+  expect(screen.getByText('下載 GPX').hasAttribute('disabled')).toBe(false)
 })
 it('releases screen wake lock on stop and clears GPS on unmount', async () => {
   const release = vi.fn().mockResolvedValue(undefined)
