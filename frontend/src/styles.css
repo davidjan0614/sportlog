@@ -78,3 +78,9 @@ h3 { margin: 12px 0 10px; font-size: 1rem; }
 .btn-add-photo { background: #eef2ff; color: #4f46e5; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
 .btn-add-photo.big { display: block; width: 100%; padding: 12px; font-size: 0.95rem; margin-top: 8px; }
 .saved-box { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.live-pace { grid-column: 1 / -1; }
+.live-pace .track-value { font-size: clamp(1.8rem, 8vw, 2.6rem); font-variant-numeric: tabular-nums; }
+.running .track-stats { position: sticky; top: 68px; z-index: 900; background: var(--bg); padding: 8px 0; }
+.running .type-select { display: none; }
+.tracking-notice { font-size: .85rem; color: var(--muted); line-height: 1.7; margin-bottom: 12px; }
+button:disabled { opacity: .5; cursor: default; }

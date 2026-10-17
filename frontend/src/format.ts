@@ -14,11 +14,11 @@ export function formatDistance(m: number): string {
 }
 
 export function formatPace(durationS: number, distanceM: number): string {
-  if (distanceM < 1) return "-'--"
+  if (distanceM < 1 || durationS <= 0) return "--:-- 分/公里"
   const pace = durationS / (distanceM / 1000)
   const m = Math.floor(pace / 60)
   const s = Math.floor(pace % 60)
-  return m + "'" + String(s).padStart(2, "0") + '"'
+  return m + ":" + String(s).padStart(2, "0") + ' 分/公里'
 }
 
 export function formatSpeed(distanceM: number, durationS: number): string {
