@@ -7,6 +7,14 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>SportLog 運動紀錄</title>
+    <script>
+      /* 2026-10-21 搬家：舊 Render 站 → 新自架站（僅在 onrender.com 上才跳，避免新站自己跳） */
+      (function () {
+        if (location.hostname.indexOf('onrender.com') !== -1) {
+          location.replace('https://sportlog.run-claw.cloud' + location.pathname + location.search + location.hash);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
